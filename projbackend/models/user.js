@@ -1,89 +1,74 @@
-const mongoose = require("mongoose");
-
+var mongoose = require("mongoose");
 const crypto = require("crypto");
+const uuidv1 = require("uuid/v1");
 
-const { v1: uuidv1 } = require('uuid');
-
-var userSchema = new mongoose.Schema({
+var userSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
-        maxLength: 32,
-        trim: true
+      type: String,
+      required: true,
+      maxlength: 32,
+      trim: true,
     },
-
     lastname: {
-        type: String,
-        maxLenght: 32,
-        trim: true   
+      type: String,
+      maxlength: 32,
+      trim: true,
     },
-
     email: {
-        type: String,
-        required: true,
-        trim: true,
-        unique: true
+      type: String,
+      trim: true,
+      required: true,
+      unique: true,
     },
-
     userinfo: {
-        type: String,
-        trim: true
+      type: String,
+      trim: true,
     },
-
     encry_password: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     salt: String,
-    role: {     
-        type: Number,
-        default: 0
+    role: {
+      type: Number,
+      default: 0,
     },
-
     purchases: {
-        type: Array,
-        default: [ ]
-    }
-
-}, {timestamps: true});
-
-// creating virtual fieldds
-
-userSchema.virtual("password") 
-    // setting up the password
-    .set(function(password) {
-        // in java script _ is used to make the variable private
-        this._password = password;
-        // now I have to populate salt
-        this.salt = uuidv1();
-        this.encry_password = securePassword(password);
-    })
-    .get(function() {
-        return this._password;
-    });
-
-
-// creating method for encrypting password
-userSchema.method = {
-    // we have to authenticate user
-    authenticate: function(plainpassword) {
-        return this.securePassword(plainpassword) === this.encry_password;
+      type: Array,
+      default: [],
     },
+  },
+  { timestamps: true }
+);
 
-    securePassword: function(plainpassword) {
-        if(!plainpassword) return "";
-        try {
+userSchema
+  .virtual("password")
+  .set(function (password) {
+    this._password = password;
+    this.salt = uuidv1();
+    this.encry_password = this.securePassword(password);
+  })
+  .get(function () {
+    return this._password;
+  });
 
-            return crypto.createHmac('sha256', this.salt)
-            .update(plainpassword)
-            .digest('hex');
+userSchema.methods = {
+  authenticate: function (plainpassword) {
+    return this.securePassword(plainpassword) === this.encry_password;
+  },
 
-        } catch (err) {
-            return "";
-        }
+  securePassword: function (plainpassword) {
+    if (!plainpassword) return "";
+    try {
+      return crypto
+        .createHmac("sha256", this.salt)
+        .update(plainpassword)
+        .digest("hex");
+    } catch (err) {
+      return "";
     }
-}
+  },
+};
 
-
-
-module.exports = mongoose.model("User ", userSchema);
+module.exports = mongoose.model("User", userSchema);
