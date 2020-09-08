@@ -5,7 +5,10 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+
+// Bringing up My Routes
 const authRoute = require("./routes/auth");
+const userRoute = require("./routes/user");
 
 const app = express();
 
@@ -25,8 +28,10 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
+
 // My Routes
 app.use("/api", authRoute);
+app.use("/api", userRoute);
 
 // PORT
 const port = process.env.PORT || 3000;
