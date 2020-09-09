@@ -9,6 +9,8 @@ const cors = require("cors");
 // Bringing up My Routes
 const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
+const categoryRoute = require("./routes/category");
+const productRoute = require("./routes/product");
 
 const app = express();
 
@@ -28,10 +30,11 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-
 // My Routes
 app.use("/api", authRoute);
 app.use("/api", userRoute);
+app.use("/api", categoryRoute);
+app.use("/api", productRoute);
 
 // PORT
 const port = process.env.PORT || 3000;
