@@ -1,12 +1,11 @@
 const User = require("../models/user");
 const Order = require("../models/order");
 
-// get user by id works with params becauyse there's a id there
 exports.getUserById = (req, res, next, id) => {
   User.findById(id).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
-        error: "No user was found in DB",
+        error: "No user was found in DB"
       });
     }
     req.profile = user;
@@ -17,8 +16,6 @@ exports.getUserById = (req, res, next, id) => {
 exports.getUser = (req, res) => {
   req.profile.salt = undefined;
   req.profile.encry_password = undefined;
-  req.profile.createdAt = undefined;
-  req.profile.updatedAt = undefined;
   return res.json(req.profile);
 };
 
@@ -26,18 +23,15 @@ exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(
     { _id: req.profile._id },
     { $set: req.body },
-    // Below both are the essential parameteres which we have to pass along
-    { new: true, userFindAndModify: false },
+    { new: true, useFindAndModify: false },
     (err, user) => {
       if (err) {
         return res.status(400).json({
-          error: "Not Able to Update Information",
+          error: "You are not authorized to update this user"
         });
       }
       user.salt = undefined;
       user.encry_password = undefined;
-      user.createdAt = undefined;
-      user.updatedAt = undefined;
       res.json(user);
     }
   );
@@ -45,21 +39,20 @@ exports.updateUser = (req, res) => {
 
 exports.userPurchaseList = (req, res) => {
   Order.find({ user: req.profile._id })
-    .populate("user", "id name")
+    .populate("user", "_id name")
     .exec((err, order) => {
       if (err) {
         return res.status(400).json({
-          error: "No order in this User",
+          error: "No Order in this account"
         });
       }
       return res.json(order);
     });
 };
 
-// Pushing ordersin our purchase list
 exports.pushOrderInPurchaseList = (req, res, next) => {
   let purchases = [];
-  req.body.order.products.forEach((product) => {
+  req.body.order.products.forEach(product => {
     purchases.push({
       _id: product._id,
       name: product.name,
@@ -67,19 +60,19 @@ exports.pushOrderInPurchaseList = (req, res, next) => {
       category: product.category,
       quantity: product.quantity,
       amount: req.body.order.amount,
-      transaction_id: req.body.order.transaction_id,
+      transaction_id: req.body.order.transaction_id
     });
   });
 
-  // Now here We've got purchases now we need to update them in database.
+  //store thi in DB
   User.findOneAndUpdate(
     { _id: req.profile._id },
-    { $push: { purchases: purchases } }, // $push is used to push items in the array
+    { $push: { purchases: purchases } },
     { new: true },
     (err, purchases) => {
       if (err) {
         return res.status(400).json({
-          error: "Not Able to save Purchases in DataBase!",
+          error: "Unable to save purchase list"
         });
       }
       next();
